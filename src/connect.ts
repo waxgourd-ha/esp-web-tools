@@ -2,6 +2,11 @@ import type { InstallButton } from "./install-button.js";
 
 export const connect = async (button: InstallButton) => {
   import("./install-dialog.js");
+  
+  if (button.language && window.setEspWebToolsLanguage) {
+    await window.setEspWebToolsLanguage(button.language);
+  }
+  
   let port: SerialPort | undefined;
   try {
     port = await navigator.serial.requestPort();

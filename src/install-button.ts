@@ -1,6 +1,8 @@
 import type { FlashState } from "./const";
 import type { EwtInstallDialog } from "./install-dialog";
 import { connect } from "./connect";
+import type { Language } from "./util/i18n";
+import { i18n } from "./util/i18n";
 
 export class InstallButton extends HTMLElement {
   public static isSupported = "serial" in navigator;
@@ -61,6 +63,8 @@ export class InstallButton extends HTMLElement {
   public showLog?: boolean;
 
   public logConsole?: boolean;
+  
+  public language?: Language;
 
   public state?: FlashState;
 
@@ -78,8 +82,8 @@ export class InstallButton extends HTMLElement {
     if (!InstallButton.isSupported || !InstallButton.isAllowed) {
       this.toggleAttribute("install-unsupported", true);
       this.renderRoot.innerHTML = !InstallButton.isAllowed
-        ? "<slot name='not-allowed'>You can only install ESP devices on HTTPS websites or on the localhost.</slot>"
-        : "<slot name='unsupported'>Your browser does not support installing things on ESP devices. Use Google Chrome or Microsoft Edge.</slot>";
+        ? `<slot name='not-allowed'>${i18n.t("button.not_allowed")}</slot>`
+        : `<slot name='unsupported'>${i18n.t("button.unsupported")}</slot>`;
       return;
     }
 
@@ -94,7 +98,7 @@ export class InstallButton extends HTMLElement {
 
     slot.name = "activate";
     const button = document.createElement("button");
-    button.innerText = "Connect";
+    button.innerText = i18n.t("button.connect");
     slot.append(button);
     if (
       "adoptedStyleSheets" in Document.prototype &&
@@ -110,6 +114,34 @@ export class InstallButton extends HTMLElement {
     }
     this.renderRoot.append(slot);
   }
+  
+  static get observedAttributes() {
+    return ["manifest", "language"];
+  }
+  
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
+    if (name === "language" && newValue && window.setEspWebToolsLanguage) {
+      window.setEspWebToolsLanguage(newValue as Language);
+    }
+  }
 }
 
 customElements.define("esp-web-install-button", InstallButton);
+
+// 导出安装按钮创建函数
+export interface InstallButtonOptions {
+  manifest: string;
+  language?: Language;
+}
+
+export const installButton = (options: InstallButtonOptions) => {
+  const button = document.createElement("esp-web-install-button") as InstallButton;
+  button.manifest = options.manifest;
+  
+  if (options.language) {
+    button.language = options.language;
+    window.setEspWebToolsLanguage?.(options.language);
+  }
+  
+  return button;
+};

@@ -5,6 +5,7 @@ import "../components/ew-text-button";
 
 import { dialogStyles } from "../styles";
 import { getOperatingSystem } from "../util/get-operating-system";
+import { i18n } from "../util/i18n";
 
 const cloudDownload = svg`
   <svg
@@ -36,45 +37,37 @@ class EwtNoPortPickedDialog extends LitElement {
 
     return html`
       <ew-dialog open @closed=${this._handleClose}>
-        <div slot="headline">No port selected</div>
+        <div slot="headline">${i18n.t("no_port.title")}</div>
         <div slot="content">
           <div>
-            If you didn't select a port because you didn't see your device
-            listed, try the following steps:
+            ${i18n.t("no_port.intro")}
           </div>
           <ol>
             <li>
-              Make sure that the device is connected to this computer (the one
-              that runs the browser that shows this website)
+              ${i18n.t("no_port.step1")}
             </li>
             <li>
-              Most devices have a tiny light when it is powered on. If yours has
-              one, make sure it is on.
+              ${i18n.t("no_port.step2")}
             </li>
             <li>
-              Make sure that the USB cable you use can be used for data and is
-              not a power-only cable.
+              ${i18n.t("no_port.step3")}
             </li>
             ${OS === "Linux"
               ? html`
                   <li>
-                    If you are using a Linux flavor, make sure that your user is
-                    part of the <code>dialout</code> group so it has permission
-                    to access the device.
+                    ${i18n.t("no_port.step4_linux")}
                     <code class="block"
-                      >sudo usermod -a -G dialout YourUserName</code
+                      >${i18n.t("no_port.step4_linux_cmd")}</code
                     >
-                    You may need to log out & back in or reboot to activate the
-                    new group access.
+                    ${i18n.t("no_port.step4_linux_note")}
                   </li>
                 `
               : ""}
             <li>
-              Make sure you have the right drivers installed. Below are the
-              drivers for common chips used in ESP devices:
+              ${i18n.t("no_port.step5")}
               <ul>
                 <li>
-                  CP2102 drivers:
+                  ${i18n.t("no_port.driver_cp2102")}
                   <a
                     href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers"
                     target="_blank"
@@ -83,7 +76,7 @@ class EwtNoPortPickedDialog extends LitElement {
                   >
                 </li>
                 <li>
-                  CH342, CH343, CH9102 drivers:
+                  ${i18n.t("no_port.driver_ch34x")}
                   <a
                     href="https://www.wch.cn/downloads/CH343SER_ZIP.html"
                     target="_blank"
@@ -97,10 +90,10 @@ class EwtNoPortPickedDialog extends LitElement {
                     >Mac</a
                   >
                   <br />
-                  (download via blue button with ${cloudDownload} icon)
+                  (${i18n.t("no_port.download_note")} ${cloudDownload})
                 </li>
                 <li>
-                  CH340, CH341 drivers:
+                  ${i18n.t("no_port.driver_ch340")}
                   <a
                     href="https://www.wch.cn/downloads/CH341SER_ZIP.html"
                     target="_blank"
@@ -114,7 +107,7 @@ class EwtNoPortPickedDialog extends LitElement {
                     >Mac</a
                   >
                   <br />
-                  (download via blue button with ${cloudDownload} icon)
+                  (${i18n.t("no_port.download_note")} ${cloudDownload})
                 </li>
               </ul>
             </li>
@@ -123,13 +116,13 @@ class EwtNoPortPickedDialog extends LitElement {
         <div slot="actions">
           ${this.doTryAgain
             ? html`
-                <ew-text-button @click=${this.close}>Cancel</ew-text-button>
+                <ew-text-button @click=${this.close}>${i18n.t("no_port.cancel")}</ew-text-button>
                 <ew-text-button @click=${this.tryAgain}>
-                  Try Again
+                  ${i18n.t("no_port.try_again")}
                 </ew-text-button>
               `
             : html`
-                <ew-text-button @click=${this.close}>Close</ew-text-button>
+                <ew-text-button @click=${this.close}>${i18n.t("no_port.close")}</ew-text-button>
               `}
         </div>
       </ew-dialog>

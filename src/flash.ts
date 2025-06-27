@@ -1,19 +1,14 @@
 import { Transport, ESPLoader } from "esptool-js";
-import {
-  Build,
-  FlashError,
-  FlashState,
-  Manifest,
-  FlashStateType,
-} from "./const";
+import { Build, FlashError, FlashState, Manifest, FlashStateType } from "./const";
 import { hardReset } from "./util/reset";
+import { i18n } from "./util/i18n";
 
 export const flash = async (
   onEvent: (state: FlashState) => void,
   port: SerialPort,
   manifestPath: string,
   manifest: Manifest,
-  eraseFirst: boolean,
+  eraseFirst: boolean
 ) => {
   let build: Build | undefined;
   let chipFamily: Build["chipFamily"];
@@ -39,7 +34,7 @@ export const flash = async (
 
   fireStateEvent({
     state: FlashStateType.INITIALIZING,
-    message: "Initializing...",
+    message: i18n.t("flash.initializing"),
     details: { done: false },
   });
 
@@ -50,8 +45,7 @@ export const flash = async (
     console.error(err);
     fireStateEvent({
       state: FlashStateType.ERROR,
-      message:
-        "Failed to initialize. Try resetting your device or holding the BOOT button while clicking INSTALL.",
+      message: i18n.t("flash.failed_initialize"),
       details: { error: FlashError.FAILED_INITIALIZING, details: err },
     });
 
@@ -64,7 +58,7 @@ export const flash = async (
 
   fireStateEvent({
     state: FlashStateType.INITIALIZING,
-    message: `Initialized. Found ${chipFamily}`,
+    message: i18n.t("flash.initialized", { chipFamily }),
     details: { done: true },
   });
 
@@ -73,7 +67,7 @@ export const flash = async (
   if (!build) {
     fireStateEvent({
       state: FlashStateType.ERROR,
-      message: `Your ${chipFamily} board is not supported.`,
+      message: i18n.t("flash.not_supported", { chipFamily }),
       details: { error: FlashError.NOT_SUPPORTED, details: chipFamily },
     });
     await hardReset(transport);
@@ -83,7 +77,7 @@ export const flash = async (
 
   fireStateEvent({
     state: FlashStateType.PREPARING,
-    message: "Preparing installation...",
+    message: i18n.t("flash.preparing"),
     details: { done: false },
   });
 
@@ -92,9 +86,7 @@ export const flash = async (
     const url = new URL(part.path, manifestURL).toString();
     const resp = await fetch(url);
     if (!resp.ok) {
-      throw new Error(
-        `Downlading firmware ${part.path} failed: ${resp.status}`,
-      );
+      throw new Error(i18n.t("flash.failed_download", { path: part.path, status: resp.status.toString() }));
     }
 
     const reader = new FileReader();
@@ -131,27 +123,27 @@ export const flash = async (
 
   fireStateEvent({
     state: FlashStateType.PREPARING,
-    message: "Installation prepared",
+    message: i18n.t("flash.preparation_complete"),
     details: { done: true },
   });
 
   if (eraseFirst) {
     fireStateEvent({
       state: FlashStateType.ERASING,
-      message: "Erasing device...",
+      message: i18n.t("flash.erasing"),
       details: { done: false },
     });
     await esploader.eraseFlash();
     fireStateEvent({
       state: FlashStateType.ERASING,
-      message: "Device erased",
+      message: i18n.t("flash.erased"),
       details: { done: true },
     });
   }
 
   fireStateEvent({
     state: FlashStateType.WRITING,
-    message: `Writing progress: 0%`,
+    message: i18n.t("flash.writing_progress", { percentage: "0" }),
     details: {
       bytesTotal: totalSize,
       bytesWritten: 0,
@@ -171,12 +163,9 @@ export const flash = async (
       compress: true,
       // report progress
       reportProgress: (fileIndex: number, written: number, total: number) => {
-        const uncompressedWritten =
-          (written / total) * fileArray[fileIndex].data.length;
+        const uncompressedWritten = (written / total) * fileArray[fileIndex].data.length;
 
-        const newPct = Math.floor(
-          ((totalWritten + uncompressedWritten) / totalSize) * 100,
-        );
+        const newPct = Math.floor(((totalWritten + uncompressedWritten) / totalSize) * 100);
 
         // we're done with this file
         if (written === total) {
@@ -186,7 +175,7 @@ export const flash = async (
 
         fireStateEvent({
           state: FlashStateType.WRITING,
-          message: `Writing progress: ${newPct}%`,
+          message: i18n.t("flash.writing_progress", { percentage: newPct.toString() }),
           details: {
             bytesTotal: totalSize,
             bytesWritten: totalWritten + written,
@@ -208,7 +197,7 @@ export const flash = async (
 
   fireStateEvent({
     state: FlashStateType.WRITING,
-    message: "Writing complete",
+    message: i18n.t("flash.writing_complete"),
     details: {
       bytesTotal: totalSize,
       bytesWritten: totalWritten,
@@ -223,6 +212,6 @@ export const flash = async (
 
   fireStateEvent({
     state: FlashStateType.FINISHED,
-    message: "All done!",
+    message: i18n.t("flash.all_done"),
   });
 };

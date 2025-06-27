@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Stop on errors
+set -e
+
+cd "$(dirname "$0")/.."
+
+echo "Testing package contents..."
+npm pack --dry-run
+
+echo "Are you sure you want to publish? (y/n)"
+read answer
+
+if [ "$answer" != "y" ]; then
+    echo "Cancelled."
+    exit 1
+fi
+
+# Run build script
+./script/build
+
+# Publish to npm
+npm publish
+
+echo "Publishing completed!"

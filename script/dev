@@ -1,13 +1,20 @@
+#!/bin/bash
 # Stop on errors
 set -e
 
 cd "$(dirname "$0")/.."
 echo 'export const version =' $(jq .version package.json)";" >src/version.ts
 
-rm -rf dist
-NODE_ENV=production npm exec -- tsc
-NODE_ENV=production npm exec -- rollup -c
+# Run TypeScript and Rollup in watch mode
+npm exec -- tsc --watch &
+npm exec -- rollup -c --watch &
 
 # Copy locales to dist
 mkdir -p dist/locales
 cp -r src/locales/*.json dist/locales/
+
+# Start dev server
+npm exec -- serve -l 5000
+
+# Kill background processes
+kill $(jobs -p)

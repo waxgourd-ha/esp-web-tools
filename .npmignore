@@ -1,3 +1,11 @@
 index.html
 firmware_build
 demo
+src
+script
+.github
+.devcontainer
+.vscode
+tsconfig.json
+*.md
+!README.md
